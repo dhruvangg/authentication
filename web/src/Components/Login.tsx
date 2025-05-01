@@ -9,11 +9,6 @@ type FormData = {
 }
 
 function Login() {
-    const authContext = useAuth();
-    if (!authContext) {
-        throw new Error("useAuth must be used within an AuthProvider");
-    }
-    const { setUser } = authContext;
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>()
     const navigate = useNavigate()
 
@@ -22,8 +17,7 @@ function Login() {
 
         axiosInstance.post('/auth/login', data)
             .then(response => {
-                console.log(response.data)
-                setUser(response.data.user)
+                console.log(response)
                 navigate('/dashboard')
             }).catch(error => {
                 console.error("There was an error logging in!", error);

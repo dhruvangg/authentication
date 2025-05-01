@@ -39,20 +39,6 @@ app.get('/', (_req, res) => {
 
 app.use('/api/auth', authRouter)
 
-app.get('/api/verify', (req: Request, res: Response) => {
-  const token = req.cookies.accessToken;
-  if (!token) res.sendStatus(401);
-
-  try {
-    const decoded = jwt.verify(token, 'champdecay');
-    res.json({ user: decoded });
-  } catch (error: any) {
-    console.log({ error });
-
-    res.sendStatus(403);
-  }
-});
-
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

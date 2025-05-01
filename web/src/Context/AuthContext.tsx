@@ -11,6 +11,7 @@ import { ReactNode } from "react";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState(null)
+ 
 
     return (
         <AuthContext.Provider value={{ user, setUser }}>

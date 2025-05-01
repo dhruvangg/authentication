@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
+import { ACCESS_TOKEN } from "../utils/constants";
 
 declare global {
     namespace Express {
@@ -10,8 +11,8 @@ declare global {
 }
 
 export const validateAuth = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.cookies?.token || req.headers["authorization"]?.split(" ")[1];
-
+    const token = req.cookies[ACCESS_TOKEN] || null
+    
     if (!token) {
         res.status(401).json({ message: "Unauthorized" });
     }

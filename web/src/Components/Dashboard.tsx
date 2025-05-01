@@ -1,29 +1,37 @@
+import { useEffect, useState } from "react";
 import { useAuth } from "../Context/AuthContext"
 import axiosInstance from "../Utils/axios"
 
 function Dashboard() {
-
+    const [profile, setProfile] = useState(null)
     const authContext = useAuth();
     if (!authContext) {
         throw new Error("useAuth must be used within an AuthProvider");
     }
-    const { user } = authContext;
 
-    const handleClick = () => {
-        axiosInstance.get('/verify', {
-            withCredentials: true,
-        }).then(response => {
-            console.log(response.data)
-        }).catch(error => {
-            console.error("There was an error fetching the dashboard!", error);
-        })
+    useEffect(() => {
+        fetchProfile()
+        async function fetchProfile() {
+            try {
+                const response = await axiosInstance.get('/auth/profile', {
+                    withCredentials: true,
+                });
+                console.log(response);
+                
+                setProfile(response.data);
+            } catch (error) {
+                console.error("There was an error fetching the profile!", error);
+            }
+        }
+        return () => {
+            setProfile(null);
+        }
+    }, [])
 
-    }
     return (
         <div>
-            {user && <h1>Welcome {user.username}</h1>}
+            {profile && <h1>Welcome {profile?.username}</h1>}
             <h1>Dashboard</h1>
-            <button onClick={handleClick}>Click</button>
         </div>
     )
 }

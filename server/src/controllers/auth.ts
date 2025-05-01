@@ -17,7 +17,7 @@ type LoginRequestBody = {
     password: string;
 }
 
-export const register = async (req: Request, res: Response) => {
+const register = async (req: Request, res: Response) => {
     try {
         const { username, email, password, isActive } = req.body as RegisterRequestBody;
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -28,7 +28,7 @@ export const register = async (req: Request, res: Response) => {
     }
 }
 
-export const login = async (req: Request, res: Response) => {
+const login = async (req: Request, res: Response) => {
     const { username, password } = req.body as LoginRequestBody;
     if (!username || !password) {
         res.status(400).json({ message: "Username and password are required" });
@@ -77,7 +77,25 @@ export const login = async (req: Request, res: Response) => {
     }
 }
 
-export const RefreshToken = async (req: Request, res: Response) => {
+const session = async (req: Request, res: Response) => {
+    const accessToken = req.cookies[ACCESS_TOKEN];
+    if (!accessToken) {
+        res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+        const payload = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET as string) as { id: string; username: string; email: string; isActive: boolean; lastLogin: Date };
+        const user = await User.findById(payload.id) as { username: string; email: string; isActive: boolean; lastLogin: Date };
+        if (!user) {
+            res.status(401).json({ message: "Unauthorized" });
+        }
+        res.status(200).json({ user });
+    } catch (error) {
+        res.status(403).json({ message: "Invalid access token" });
+    }
+}
+
+const RefreshToken = async (req: Request, res: Response) => {
     const { refreshToken } = req.body;
     if (!refreshToken) {
         res.status(401).json({ message: "Refresh token is required" });
@@ -99,3 +117,19 @@ export const RefreshToken = async (req: Request, res: Response) => {
         res.status(403).json({ message: "Invalid refresh token" });
     }
 }
+
+const logout = async (req: Request, res: Response) => {
+    res.clearCookie(ACCESS_TOKEN, { path: "/" });
+    res.clearCookie(REFRESH_TOKEN, { path: "/" });
+    res.status(200).json({ message: "Logout successful" });
+}
+
+const profile = async (req: Request, res: Response) => {
+    const user = req.user as { id: string; username: string; email: string; isActive: boolean; lastLogin: Date };
+    if (!user) {
+        res.status(401).json({ message: "Unauthorized" });
+    }
+
+    res.status(200).json({ user });
+}
+export { register, login, RefreshToken, session, logout, profile };
