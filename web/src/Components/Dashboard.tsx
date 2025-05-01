@@ -8,30 +8,12 @@ function Dashboard() {
     if (!authContext) {
         throw new Error("useAuth must be used within an AuthProvider");
     }
-
-    useEffect(() => {
-        fetchProfile()
-        async function fetchProfile() {
-            try {
-                const response = await axiosInstance.get('/auth/profile', {
-                    withCredentials: true,
-                });
-                console.log(response);
-                
-                setProfile(response.data);
-            } catch (error) {
-                console.error("There was an error fetching the profile!", error);
-            }
-        }
-        return () => {
-            setProfile(null);
-        }
-    }, [])
+    const { auth } = authContext
 
     return (
         <div>
-            {profile && <h1>Welcome {profile?.username}</h1>}
             <h1>Dashboard</h1>
+            {auth.isLoading ? <p>Loading...</p> : <p>Welcome, {auth.user?.username}</p>}
         </div>
     )
 }

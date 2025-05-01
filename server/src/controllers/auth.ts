@@ -96,14 +96,17 @@ const session = async (req: Request, res: Response) => {
 }
 
 const RefreshToken = async (req: Request, res: Response) => {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies[REFRESH_TOKEN];
     if (!refreshToken) {
         res.status(401).json({ message: "Refresh token is required" });
     }
 
     try {
-        const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string) as { username: string };
-        const newAccessToken = generateAccessToken(payload);
+        const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET as string) as { id: number, username: string, email: string, isActive: boolean, lastLogin: Date };
+        console.log({ payload });
+        const { id, username, email, isActive, lastLogin } = payload;
+
+        const newAccessToken = generateAccessToken({ id, username, email, isActive, lastLogin });
 
         res.cookie(ACCESS_TOKEN, newAccessToken, {
             httpOnly: true,
@@ -114,7 +117,7 @@ const RefreshToken = async (req: Request, res: Response) => {
         }).json({ message: "New access token generated" });
 
     } catch (error) {
-        res.status(403).json({ message: "Invalid refresh token" });
+        res.status(401).json({ message: "Invalid refresh token" });
     }
 }
 
